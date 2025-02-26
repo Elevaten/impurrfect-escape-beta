@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UFO Survival Game</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background: black; touch-action: none; display: flex; justify-content: center; align-items: center; }
+        canvas { display: block; }
+        #score { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 24px; font-family: Arial, sans-serif; }
+        
+        @media (max-width: 600px) {
+            canvas { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            if (window.innerWidth <= 600) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            } else {
+                canvas.width = 600;
+                canvas.height = 800;
+            }
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        let score = 0;
+        let ufo = { x: canvas.width / 2, y: canvas.height / 2, size: 80, alive: true };
+        let lasers = [];
+        let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+
+        const bgImage = new Image();
+        bgImage.src = "background.png";
+        const ufoImage = new Image();
+        ufoImage.src = "ufo.png";
+        const projectileImage = new Image();
+        projectileImage.src = "weewoo.png";
+
+        const music = new Audio("music.mp3");
+        music.loop = true;
+        music.play();
+
+        function playSound(src) {
+            const sound = new Audio(src);
+            sound.play();
+        }
+
+        function updateUFO() {
+            if (ufo.alive) {
+                ufo.x += (mouseX - ufo.x) * 0.1;
+                ufo.y += (mouseY - ufo.y) * 0.1;
+                ufo.x = Math.max(ufo.size / 2, Math.min(canvas.width - ufo.size / 2, ufo.x));
+                ufo.y = Math.max(ufo.size / 2, Math.min(canvas.height - ufo.size / 2, ufo.y));
+            }
+        }
+
+        window.addEventListener("mousemove", (event) => {
+            mouseX = event.clientX - canvas.getBoundingClientRect().left;
+            mouseY = event.clientY - canvas.getBoundingClientRect().top;
+        });
+
+        window.addEventListener("touchmove", (event) => {
+            event.preventDefault();
+            const touch = event.touches[0];
+            mouseX = touch.clientX - canvas.getBoundingClientRect().left;
+            mouseY = touch.clientY - canvas.getBoundingClientRect().top;
+        }, { passive: false });
+
+        function spawnProjectile() {
+            playSound("cat.mp3");
+            // Logic for spawning a projectile can be added here
+        }
+
+        function fireLaser() {
+            playSound("laser.mp3");
+            // Logic for firing a laser can be added here
+        }
+        function gameOver() {
+    ufo.alive = false;
+    gameOverSound.play();
+    
+    const playerName = prompt("Enter your name:");
+    if (playerName) {
+        submitScore(playerName, score);
+    }
+
+    setTimeout(() => {
+        alert(`Game Over! Your Score: ${score}`);
+        location.reload();
+    }, 100);
+}
+
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(ufoImage, ufo.x - ufo.size / 2, ufo.y - ufo.size / 2, ufo.size, ufo.size);
+            document.getElementById("score").textContent = `Score: ${score}`;
+        }
+
+        function gameLoop() {
+            if (ufo.alive) {
+                score++;
+                timeElapsed++;
+                if (timeElapsed % laserIncreaseRate === 0) { spawnLaser(); }
+                updateUFO();
+                updateProjectiles();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        gameLoop();
+    </script>
+</body>
+</html>

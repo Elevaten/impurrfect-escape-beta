@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>UFO Survival Game</title>
+    <style>
+        /* 🌟 Default Mobile Background */
+body {
+    background-image: url('display.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 🌟 PC Version Background */
+@media (min-width: 601px) {
+    body {
+        background-image: url('pcdisplay.png');
+    }
+}
+
+/* 🔧 Reset Default Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 🎮 Full-Screen Setup */
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    touch-action: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 🎨 Game Canvas (Hidden Before Start) */
+canvas {
+    display: none;
+}
+
+/* 🎯 Score Display */
+#score {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+}
+
+@media (max-width: 600px) {
+    canvas {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+#startButton { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    padding: 15px 30px; 
+    font-size: 22px; 
+    font-weight: bold;
+    color: white; 
+    background: linear-gradient(45deg, #ff66b2, #ffccff); 
+    border: none; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    box-shadow: 0 5px 15px rgba(255, 105, 180, 0.5);
+    transition: all 0.3s ease;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+#startButton:hover {
+    background: linear-gradient(45deg, #ff3399, #ff99ff); 
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
+}
+
+    </style>
+</head>
+<body>
+    
+    <div id="score">Score: 0</div>
+    <button id="startButton">Start Game</button>
+
+    <canvas id="gameCanvas"></canvas>
+    <p id="status"></p>
+    <audio id="catSound" src="cat.mp3"></audio>
+    <audio id="gameOverSound" src="gameover.mp3"></audio>
+    <audio id="backgroundMusic" src="music.mp3" loop></audio>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    
+        // Your Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCap6zPsKgGoyiR7uktUPPfG4RQ8_drzeo",
+          authDomain: "impurrfect-escape-leader-d422f.firebaseapp.com",
+          projectId: "impurrfect-escape-leader-d422f",
+          storageBucket: "impurrfect-escape-leader-d422f.appspot.com",
+          messagingSenderId: "407434014016",
+          appId: "1:407434014016:web:3bbd9cd878fda0c1115ea5",
+          measurementId: "G-QTESHW03PR"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+    
+        // Function to send a document to the "Leaderboard" collection
+        window.submitScore = async function (playerName, score) {
+          const statusElement = document.getElementById("status");
+    
+          // Validate input
+          if (!playerName || !score) {
+            statusElement.textContent = "Please enter both name and score.";
+            return;
+          }
+    
+          statusElement.textContent = "Sending document...";
+    
+          try {
+            // Add a document to the "Leaderboard" collection
+            await addDoc(collection(db, "Leaderboard"), {
+              playerName: playerName,
+              score: parseInt(score, 10), // Convert score to a number
+              timestamp: serverTimestamp()
+            });
+            statusElement.textContent = "Score submitted successfully!";
+          } catch (error) {
+            console.error("Error sending document: ", error);
+            statusElement.textContent = "Error submitting score. Check console for details.";
+          }
+        };
+      </script>
+    
+    <script>
+        
+        const startButton = document.getElementById("startButton");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let gameRunning = false; // The game is paused at start
+
+let music = new Audio("music.mp3");
+music.loop = true;
+
+function startGame() {
+    gameRunning = true;
+    ufo.alive = true;
+    lasers = [];
+    projectiles = [];
+    score = 0;
+    timeElapsed = 0;
+
+    music.play();
+    startButton.style.display = "none"; 
+    canvas.style.display = "block"; 
+
+    // 🖼 Remove the background image when the game starts
+    document.body.style.background = "black";
+
+    gameLoop();
+}
+
+
+
+// ✅ Attach click event to start the game
+startButton.addEventListener("click", startGame);
+
+// ✅ Stop the game from running before the button is clicked
+function gameLoop() {
+    if (!gameRunning) return; // Stops if game is not running
+    
+    if (ufo.alive) {
+        if (timeElapsed % 20 === 0) {
+            score++;
+        }
+        timeElapsed++;
+
+        if (timeElapsed % laserIncreaseRate === 0) {
+            spawnLaser();
+        }
+
+        updateUFO();
+        updateProjectiles();
+        updateLasers();
+        draw(); // Redraw everything
+
+        requestAnimationFrame(gameLoop); // Keep looping the game
+    }
+}
+
+
+        function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+startButton.addEventListener("click", startGame);
+
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+        
+        const isMobile = window.innerWidth < 600;
+        let score = 0;
+        let ufo = { 
+    x: canvas.width / 2, 
+    y: canvas.height / 2, 
+    size: isMobile ? 100 : 140, // Smaller on mobile, larger on PC
+    alive: true 
+};
+        let lasers = [];
+        let projectiles = [];
+        let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
+        let laserSpawnRate = 2000;
+        let timeElapsed = 0;
+        let laserIncreaseRate = 40;
+        let projectileSpawnRate = 3000;
+        let minProjectileDistance = 50;
+        let projectileSize = isMobile ? 50 : 130; // Smaller on mobile, larger on PC
+
+        
+const backgroundMusic = document.getElementById("backgroundMusic");
+        const laserSound = new Audio("laser.mp3");
+
+function playLaserSound() {
+    laserSound.currentTime = 0; // Reset to start for overlapping effect
+    laserSound.play().catch(error => console.log("Playback error:", error));
+}
+
+        const catSound = new Audio("cat.mp3");
+
+function playCatSound() {
+    catSound.currentTime = 0; // Reset sound to start if it's already playing
+    catSound.play().catch(error => console.log("Playback error:", error));
+}
+
+        document.addEventListener("click", () => {
+    const music = new Audio("music.mp3");
+    music.loop = true;
+    music.play().catch(error => console.log("Playback error:", error));
+}, { once: true }); // Ensures it only triggers once
+
+document.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(error => console.log("Playback error:", error));
+    }
+}, { once: true }); // Ensures it only triggers once
+
+
+const bgImage = new Image();
+bgImage.src = window.innerWidth < 600 ? "background.png" : "backgroundpc.png";
+
+        const ufoImage = new Image();
+        ufoImage.src = "ufo.png";
+        const projectileImage = new Image();
+        projectileImage.src = "weewoo.png";
+
+        function updateUFO() {
+            if (ufo.alive) {
+                ufo.x += (mouseX - ufo.x) * 0.1;
+                ufo.y += (mouseY - ufo.y) * 0.1;
+                ufo.x = Math.max(ufo.size / 2, Math.min(canvas.width - ufo.size / 2, ufo.x));
+                ufo.y = Math.max(ufo.size / 2, Math.min(canvas.height - ufo.size / 2, ufo.y));
+            }
+        }
+
+        window.addEventListener("mousemove", (event) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (event.clientX - rect.left) * (canvas.width / rect.width);
+            mouseY = (event.clientY - rect.top) * (canvas.height / rect.height);
+        });
+
+        window.addEventListener("touchmove", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = event.touches[0]; // Get the first touch point
+    mouseX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    mouseY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+    });
+
+        function checkLaserCollision(laser) {
+    let dist = Math.abs((laser.y2 - laser.y1) * ufo.x - (laser.x2 - laser.x1) * ufo.y + laser.x2 * laser.y1 - laser.y2 * laser.x1) /
+               Math.hypot(laser.y2 - laser.y1, laser.x2 - laser.x1);
+    return dist < ufo.size / 3;
+}
+
+        function spawnProjectile() {
+            
+            let x, y, valid;
+            do {
+                valid = true;
+                let side = Math.floor(Math.random() * 4);
+                if (side === 0) { x = Math.random() * canvas.width; y = 0; }
+                else if (side === 1) { x = canvas.width; y = Math.random() * canvas.height; }
+                else if (side === 2) { x = Math.random() * canvas.width; y = canvas.height; }
+                else { x = 0; y = Math.random() * canvas.height; }
+                
+                for (let projectile of projectiles) {
+                    if (Math.hypot(projectile.x - x, projectile.y - y) < minProjectileDistance) {
+                        valid = false;
+                        break;
+                    }
+                }
+            } while (!valid);
+            playCatSound();
+            let projectileSpeed = window.innerWidth < 600 ? 1 : 2; 
+projectiles.push({ x, y, speed: projectileSpeed });
+
+        }
+        setInterval(spawnProjectile, projectileSpawnRate);
+        function updateProjectiles() {
+            projectiles.forEach((projectile, index) => {
+                let dx = ufo.x - projectile.x;
+                let dy = ufo.y - projectile.y;
+                let distance = Math.hypot(dx, dy);
+                if (distance > 1) {
+                    projectile.x += (dx / distance) * projectile.speed;
+                    projectile.y += (dy / distance) * projectile.speed;
+                }
+                if (distance < ufo.size / 2) {
+                    gameOver();
+                }
+            });
+        }
+
+        function spawnLaser() {
+            
+            let angle = Math.random() * Math.PI * 2;
+            let laser = {
+                x1: Math.cos(angle) * canvas.width + canvas.width / 2,
+                y1: Math.sin(angle) * canvas.height + canvas.height / 2,
+                x2: -Math.cos(angle) * canvas.width + canvas.width / 2,
+                y2: -Math.sin(angle) * canvas.height + canvas.height / 2,
+                firing: false,
+                flickerTime: 60
+            };
+            lasers.push(laser);
+        }
+
+        function updateLasers() {
+    lasers.forEach((laser, index) => {
+        if (laser.flickerTime > 0) {
+            laser.flickerTime--;
+        } else {
+            if (!laser.firing) {
+                playLaserSound(); // Play sound when laser starts firing
+            }
+            laser.firing = true;
+            if (laser.flickerTime <= -60) {
+                lasers.splice(index, 1);
+            }
+            laser.flickerTime--;
+        }
+
+        // Check collision after laser starts firing
+        if (laser.firing && checkLaserCollision(laser)) {
+            gameOver(); // Kill player if hit
+        }
+    });
+}
+
+ // Example score (replace with your actual game logic)
+
+ let scoreSubmitted = false; // Track if score has been submitted
+
+function gameOver() {
+    if (scoreSubmitted) return; // Prevent double submission
+
+    scoreSubmitted = true; // Set flag to true after first submission
+
+    ufo.alive = false;
+    gameOverSound.play();
+
+    setTimeout(() => {
+        const playerName = prompt("Game Over! Enter your name:");
+        alert(`Game Over! Your Score: ${score}`);
+
+        submitScore(playerName, score); // Submit only once
+
+        setTimeout(() => {
+            location.reload(); // Reload after 2 seconds so player sees success message
+        }, 2000);
+        
+    }, 100);
+}
+
+
+        function checkLaserCollision(laser) {
+    let ufoRadius = ufo.size * 0.3; // 30% of UFO size (smaller hitbox)
+    
+    let dist = Math.abs(
+        (laser.y2 - laser.y1) * ufo.x - (laser.x2 - laser.x1) * ufo.y + laser.x2 * laser.y1 - laser.y2 * laser.x1
+    ) / Math.hypot(laser.y2 - laser.y1, laser.x2 - laser.x1);
+
+    return dist < ufoRadius;
+}
+
+
+
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(ufoImage, ufo.x - ufo.size / 2, ufo.y - ufo.size / 2, ufo.size, ufo.size);
+
+            
+            projectiles.forEach(projectile => {
+                ctx.fillStyle = "white";
+                ctx.font = "16px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Galactic Furrice", projectile.x, projectile.y - 25);
+                ctx.drawImage(projectileImage, projectile.x - projectileSize / 2, projectile.y - projectileSize / 2, projectileSize, projectileSize);
+
+            });
+            
+            updateLasers();
+            lasers.forEach(laser => {
+                ctx.beginPath();
+                ctx.moveTo(laser.x1, laser.y1);
+                ctx.lineTo(laser.x2, laser.y2);
+                
+                if (laser.firing) {
+                    ctx.strokeStyle = "orange";
+                    ctx.lineWidth = 14;
+                    ctx.stroke();
+                    
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 8;
+                    ctx.stroke();
+
+                    ctx.strokeStyle = "white";
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                } else {
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            });
+            document.getElementById("score").textContent = `Score: ${score}`;
+        }
+
+    </script>
+</body>
+</html>
