@@ -87,7 +87,7 @@ canvas {
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
 }
-       #leaderboard {
+    #leaderboard {
     background-color: purple;
     color: white;
     padding: 15px;
@@ -96,8 +96,10 @@ canvas {
     text-align: center;
     width: 250px;
     margin: 20px auto; /* Centers the leaderboard */
-    display: absolute; /* Ensure it's visible at start */
-    margin-top: 20px;
+    position: absolute;
+    bottom: 20px; /* Moves it lower */
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 #leaderboardList {
