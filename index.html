@@ -87,7 +87,7 @@ canvas {
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
 }
-  #leaderboard {
+   #leaderboard {
     background-color: purple;
     color: white;
     padding: 15px;
@@ -96,16 +96,12 @@ canvas {
     text-align: center;
     width: 250px;
     position: absolute;
-    top: 70%;
+    top: 70%; /* Move it lower on the screen */
     left: 50%;
     transform: translateX(-50%);
-    z-index: 10;
+    z-index: 10; /* Ensure it stays above other elements */
 }
 
-#leaderboard h2 {
-    font-size: 22px;
-    margin-bottom: 10px;
-}
 
 #leaderboardList {
     list-style-type: none;
@@ -125,9 +121,9 @@ canvas {
     <div id="score">Score: 0</div>
     <button id="startButton">Start Game</button>
       <h2>Top 10 Scores</h2>
-    <div id="leaderboard">
-    <h2>Top 10 Scores</h2>
-    <ul id="leaderboardList"></ul>
+    <ul id="leaderboard"></ul>
+     <ul id="leaderboardList">
+
     <canvas id="gameCanvas"></canvas>
     <p id="status"></p>
     <audio id="catSound" src="cat.mp3"></audio>
@@ -154,24 +150,20 @@ canvas {
         const db = getFirestore(app);
 
         // Function to fetch top 10 scores from the "Leaderboard" collection
-      async function fetchTopScores() {
-    const leaderboardList = document.getElementById("leaderboardList");
-    leaderboardList.innerHTML = "<li>Loading...</li>";
+        async function fetchTopScores() {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = "<li>Loading...</li>";
 
-    const leaderboardRef = collection(db, "Leaderboard");
-    const q = query(leaderboardRef, orderBy("score", "desc"), limit(10));
-    const querySnapshot = await getDocs(q);
+            const leaderboardRef = collection(db, "Leaderboard"); // Use "Leaderboard" collection
+            const q = query(leaderboardRef, orderBy("score", "desc"), limit(10));
+            const querySnapshot = await getDocs(q);
 
-    leaderboardList.innerHTML = ""; // Clear loading text
-
-    let rank = 1; // Start ranking from 1
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        leaderboardList.innerHTML += `<li>${rank}. ${data.playerName}: ${data.score}</li>`;
-        rank++; // Increase rank for the next player
-    });
-}
-
+            leaderboard.innerHTML = ""; // Clear loading text
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                leaderboard.innerHTML += `<li>${data.playerName}: ${data.score}</li>`;
+            });
+        }
 
         fetchTopScores();
     </script>
