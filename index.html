@@ -271,68 +271,66 @@ function gameLoop() {
     }
 }
 
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+const freezeBuffImg = new Image();
+freezeBuffImg.src = "image_2025-02-27_221702295-removebg-preview.png";
 
 const freezeBuff = {
-    x: Math.random() * (canvas.width - 50),
-    y: Math.random() * (canvas.height - 50),
-    size: 40,
-    image: new Image(),
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    radius: 20,
     active: false,
 };
-freezeBuff.image.src = "image_2025-02-27_221702295-removebg-preview.png";
 
 let freezeActive = false;
-let freezeEndTime = 0;
+let freezeTimer = 0;
+let nextSpawnTime = 3000; // First spawn at 3s
 
 function spawnFreezeBuff() {
-    freezeBuff.x = Math.random() * (canvas.width - 50);
-    freezeBuff.y = Math.random() * (canvas.height - 50);
+    freezeBuff.x = Math.random() * (canvas.width - 40) + 20;
+    freezeBuff.y = Math.random() * (canvas.height - 40) + 20;
     freezeBuff.active = true;
 }
 
-setTimeout(() => {
-    spawnFreezeBuff();
-    setInterval(spawnFreezeBuff, 10000);
-}, 3000);
-
-function checkCollision(playerX, playerY) {
-    if (
-        playerX < freezeBuff.x + freezeBuff.size &&
-        playerX + 20 > freezeBuff.x &&
-        playerY < freezeBuff.y + freezeBuff.size &&
-        playerY + 20 > freezeBuff.y
-    ) {
-        freezeBuff.active = false;
-        activateFreeze();
+function updateFreezeBuff(deltaTime) {
+    if (freezeActive) {
+        freezeTimer -= deltaTime;
+        if (freezeTimer <= 0) {
+            freezeActive = false;
+            // Resume lasers and projectiles
+        }
     }
-}
-
-function activateFreeze() {
-    freezeActive = true;
-    freezeEndTime = Date.now() + 5000;
-    document.body.style.backgroundColor = "rgba(0, 0, 255, 0.2)";
     
-    setTimeout(() => {
-        freezeActive = false;
-        document.body.style.backgroundColor = "white";
-    }, 5000);
-}
-
-function drawFreezeBuff() {
-    if (freezeBuff.active) {
-        ctx.drawImage(freezeBuff.image, freezeBuff.x, freezeBuff.y, freezeBuff.size, freezeBuff.size);
+    nextSpawnTime -= deltaTime;
+    if (nextSpawnTime <= 0) {
+        spawnFreezeBuff();
+        nextSpawnTime = 10000; // Respawn every 10s
     }
 }
 
-function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawFreezeBuff();
-    requestAnimationFrame(gameLoop);
+function drawFreezeBuff(ctx) {
+    if (freezeBuff.active) {
+        ctx.drawImage(freezeBuffImg, freezeBuff.x - freezeBuff.radius, freezeBuff.y - freezeBuff.radius, 40, 40);
+    }
+    if (freezeActive) {
+        ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 }
 
-gameLoop();
+canvas.addEventListener("click", (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    const dx = mouseX - freezeBuff.x;
+    const dy = mouseY - freezeBuff.y;
+    if (Math.sqrt(dx * dx + dy * dy) < freezeBuff.radius) {
+        freezeBuff.active = false;
+        freezeActive = true;
+        freezeTimer = 5000; // Freeze for 5 seconds
+        // Pause lasers and projectiles here
+    }
+});
 
 
         function resizeCanvas() {
