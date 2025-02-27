@@ -251,7 +251,7 @@ startButton.addEventListener("click", startGame);
 // ✅ Stop the game from running before the button is clicked
 function gameLoop() {
     if (!gameRunning) return; // Stops if game is not running
-    
+
     if (ufo.alive) {
         if (timeElapsed % 20 === 0) {
             score++;
@@ -265,13 +265,14 @@ function gameLoop() {
         updateUFO();
         updateProjectiles();
         updateLasers();
-        updateFreezeBuff(16); // Ensure freeze buff updates
+        updateFreezeBuff(16); // Ensuring freeze buff updates every frame
 
         draw(); // Redraw everything
 
         requestAnimationFrame(gameLoop); // Keep looping the game
     }
 }
+
 
 const freezeBuffImg = new Image();
 freezeBuffImg.src = "image_2025-02-27_221702295-removebg-preview.png";
@@ -286,28 +287,38 @@ const freezeBuff = {
 let freezeActive = false;
 let freezeTimer = 0;
 let nextSpawnTime = 3000; // First spawn at 3s
-
 function spawnFreezeBuff() {
     freezeBuff.x = Math.random() * (canvas.width - 40) + 20;
     freezeBuff.y = Math.random() * (canvas.height - 40) + 20;
     freezeBuff.active = true;
 }
 
-function updateFreezeBuff(deltaTime) {
+// Force first spawn after 3 seconds
+setTimeout(() => {
+    spawnFreezeBuff();
+}, 3000);
+        
+let lastTime = performance.now();
+
+function updateFreezeBuff() {
+    let now = performance.now();
+    let deltaTime = now - lastTime;
+    lastTime = now;
+
     if (freezeActive) {
         freezeTimer -= deltaTime;
         if (freezeTimer <= 0) {
             freezeActive = false;
-            // Resume lasers and projectiles
         }
     }
-    
+
     nextSpawnTime -= deltaTime;
     if (nextSpawnTime <= 0) {
         spawnFreezeBuff();
         nextSpawnTime = 10000; // Respawn every 10s
     }
 }
+
 
 function drawFreezeBuff(ctx) {
     if (freezeBuff.active) {
