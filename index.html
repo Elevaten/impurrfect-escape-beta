@@ -260,7 +260,8 @@ function gameLoop() {
         }
         timeElapsed++;
 
-        if (timeElapsed % laserIncreaseRate === 0) {
+        if (setInterval(spawnLaser, 3000); // Spawns a laser every 3 seconds (3000ms)
+) {
             spawnLaser();
         }
 
