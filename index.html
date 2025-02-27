@@ -87,6 +87,22 @@ canvas {
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
 }
+        #leaderboard {
+    display: none; /* Hidden until the game is over */
+    background-color: purple;
+    color: white;
+    font-size: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%); /* Positions it below the button */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
 
     </style>
 </head>
@@ -208,6 +224,7 @@ function startGame() {
     music.play();
     startButton.style.display = "none"; 
     canvas.style.display = "block"; 
+     document.getElementById("leaderboard").style.display = "none";
 
     // 🖼 Remove the background image when the game starts
     document.body.style.background = "black";
@@ -230,7 +247,7 @@ function gameLoop() {
         }
         timeElapsed++;
 
-        if (timeElapsed % laserIncreaseRate === 0) {
+        if (timeElapsed % laserIncreaseRate === 1) {
             spawnLaser();
         }
 
@@ -267,7 +284,7 @@ window.addEventListener("resize", resizeCanvas);
         let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
         let laserSpawnRate = 2000;
         let timeElapsed = 0;
-        let laserIncreaseRate = 40;
+        let laserIncreaseRate = 80;
         let projectileSpawnRate = 3000;
         let minProjectileDistance = 50;
         let projectileSize = isMobile ? 50 : 130; // Smaller on mobile, larger on PC
@@ -385,7 +402,7 @@ projectiles.push({ x, y, speed: projectileSpeed });
                 x2: -Math.cos(angle) * canvas.width + canvas.width / 2,
                 y2: -Math.sin(angle) * canvas.height + canvas.height / 2,
                 firing: false,
-                flickerTime: 60
+                flickerTime: 80
             };
             lasers.push(laser);
         }
@@ -430,12 +447,18 @@ function gameOver() {
 
         submitScore(playerName, score); // Submit only once
 
+        // Show leaderboard
+        const leaderboard = document.getElementById("leaderboard");
+        leaderboard.innerHTML = `Player: ${playerName}<br>Score: ${score}`;
+        leaderboard.style.display = "block";
+
         setTimeout(() => {
             location.reload(); // Reload after 2 seconds so player sees success message
         }, 2000);
         
     }, 100);
 }
+
 
 
         function checkLaserCollision(laser) {
