@@ -65,7 +65,7 @@ canvas {
 }
 
 #startButton { 
-    position: absolute; 
+    position: block; 
     top: 50%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
@@ -109,6 +109,12 @@ canvas {
     margin: 5px 0;
 }
 
+.h2{
+    background-color: purple;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+}
 
     </style>
 </head>
@@ -254,7 +260,7 @@ function gameLoop() {
         }
         timeElapsed++;
 
-        if (timeElapsed % laserIncreaseRate === 1) {
+        if (timeElapsed % laserIncreaseRate === 0) {
             spawnLaser();
         }
 
@@ -291,7 +297,7 @@ window.addEventListener("resize", resizeCanvas);
         let mouseX = canvas.width / 2, mouseY = canvas.height / 2;
         let laserSpawnRate = 2000;
         let timeElapsed = 0;
-        let laserIncreaseRate = 80;
+        let laserIncreaseRate = 120;
         let projectileSpawnRate = 3000;
         let minProjectileDistance = 50;
         let projectileSize = isMobile ? 50 : 130; // Smaller on mobile, larger on PC
