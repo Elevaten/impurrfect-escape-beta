@@ -240,6 +240,8 @@ let music = new Audio("music.mp3");
 music.loop = true;
 
 function startGame() {
+    console.log("startGame() function triggered!"); // Debugging
+
     gameRunning = true;
     ufo.alive = true;
     lasers = [];
@@ -248,16 +250,21 @@ function startGame() {
     timeElapsed = 0;
 
     music.play();
-    startButton.style.display = "none"; 
-    canvas.style.display = "block"; 
-     document.getElementById("leaderboard").style.display = "none";
 
-    // 🖼 Remove the background image when the game starts
-    canvas.style.background = "black"; // Only make the canvas black
+    // Hide start button and leaderboard
+    document.getElementById("startButton").style.display = "none";
+    document.getElementById("leaderboard").style.display = "none"; 
 
+    // Hide other start screen elements (if any)
+    document.getElementById("score").style.display = "block"; // Show score
+    document.getElementById("gameCanvas").style.display = "block"; // Show canvas
 
-    gameLoop();
+    // Remove background image to avoid overlap
+    document.body.style.background = "black";
+
+    gameLoop(); // Start the game loop
 }
+
 
 
 
