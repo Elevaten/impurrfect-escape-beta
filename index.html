@@ -254,7 +254,20 @@ function startGame() {
 
 
 // ✅ Attach click event to start the game
-startButton.addEventListener("click", startGame);
+document.getElementById("startButton").addEventListener("click", function() {
+    const canvas = document.getElementById("gameCanvas");
+    const startButton = document.getElementById("startButton");
+
+    // Hide start button
+    startButton.style.display = "none";
+
+    // Show canvas
+    canvas.style.display = "block";
+
+    // Start game logic here (ensure your game initialization is working)
+    startGame();
+});
+
 
 // ✅ Stop the game from running before the button is clicked
 function gameLoop() {
