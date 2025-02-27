@@ -87,20 +87,26 @@ canvas {
     transform: translate(-50%, -50%) scale(1.1);
     box-shadow: 0 8px 20px rgba(255, 105, 180, 0.7);
 }
-        #leaderboard {
-    display: none; /* Hidden until the game is over */
+       #leaderboard {
     background-color: purple;
     color: white;
-    font-size: 20px;
     padding: 15px;
     border-radius: 10px;
-    width: 300px;
+    font-size: 20px;
     text-align: center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, 50%); /* Positions it below the button */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    width: 250px;
+    margin: 20px auto; /* Centers the leaderboard */
+    display: block; /* Ensure it's visible at start */
+}
+
+#leaderboardList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#leaderboardList li {
+    font-size: 18px;
+    margin: 5px 0;
 }
 
 
@@ -112,6 +118,7 @@ canvas {
     <button id="startButton">Start Game</button>
       <h2>Top 10 Scores</h2>
     <ul id="leaderboard"></ul>
+     <ul id="leaderboardList">
 
     <canvas id="gameCanvas"></canvas>
     <p id="status"></p>
@@ -446,11 +453,6 @@ function gameOver() {
         alert(`Game Over! Your Score: ${score}`);
 
         submitScore(playerName, score); // Submit only once
-
-        // Show leaderboard
-        const leaderboard = document.getElementById("leaderboard");
-        leaderboard.innerHTML = `Player: ${playerName}<br>Score: ${score}`;
-        leaderboard.style.display = "block";
 
         setTimeout(() => {
             location.reload(); // Reload after 2 seconds so player sees success message
