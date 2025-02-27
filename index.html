@@ -94,12 +94,53 @@ canvas {
     
     <div id="score">Score: 0</div>
     <button id="startButton">Start Game</button>
+      <h2>Top 10 Scores</h2>
+    <ul id="leaderboard"></ul>
 
     <canvas id="gameCanvas"></canvas>
     <p id="status"></p>
     <audio id="catSound" src="cat.mp3"></audio>
     <audio id="gameOverSound" src="gameover.mp3"></audio>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCap6zPsKgGoyiR7uktUPPfG4RQ8_drzeo",
+            authDomain: "impurrfect-escape-leader-d422f.firebaseapp.com",
+            projectId: "impurrfect-escape-leader-d422f",
+            storageBucket: "impurrfect-escape-leader-d422f.appspot.com",
+            messagingSenderId: "407434014016",
+            appId: "1:407434014016:web:3bbd9cd878fda0c1115ea5",
+            measurementId: "G-QTESHW03PR"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Function to fetch top 10 scores from the "Leaderboard" collection
+        async function fetchTopScores() {
+            const leaderboard = document.getElementById("leaderboard");
+            leaderboard.innerHTML = "<li>Loading...</li>";
+
+            const leaderboardRef = collection(db, "Leaderboard"); // Use "Leaderboard" collection
+            const q = query(leaderboardRef, orderBy("score", "desc"), limit(10));
+            const querySnapshot = await getDocs(q);
+
+            leaderboard.innerHTML = ""; // Clear loading text
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                leaderboard.innerHTML += `<li>${data.name}: ${data.score}</li>`;
+            });
+        }
+
+        fetchTopScores();
+    </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
