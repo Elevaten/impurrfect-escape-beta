@@ -271,6 +271,69 @@ function gameLoop() {
     }
 }
 
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const freezeBuff = {
+    x: Math.random() * (canvas.width - 50),
+    y: Math.random() * (canvas.height - 50),
+    size: 40,
+    image: new Image(),
+    active: false,
+};
+freezeBuff.image.src = "image_2025-02-27_221702295-removebg-preview.png";
+
+let freezeActive = false;
+let freezeEndTime = 0;
+
+function spawnFreezeBuff() {
+    freezeBuff.x = Math.random() * (canvas.width - 50);
+    freezeBuff.y = Math.random() * (canvas.height - 50);
+    freezeBuff.active = true;
+}
+
+setTimeout(() => {
+    spawnFreezeBuff();
+    setInterval(spawnFreezeBuff, 10000);
+}, 3000);
+
+function checkCollision(playerX, playerY) {
+    if (
+        playerX < freezeBuff.x + freezeBuff.size &&
+        playerX + 20 > freezeBuff.x &&
+        playerY < freezeBuff.y + freezeBuff.size &&
+        playerY + 20 > freezeBuff.y
+    ) {
+        freezeBuff.active = false;
+        activateFreeze();
+    }
+}
+
+function activateFreeze() {
+    freezeActive = true;
+    freezeEndTime = Date.now() + 5000;
+    document.body.style.backgroundColor = "rgba(0, 0, 255, 0.2)";
+    
+    setTimeout(() => {
+        freezeActive = false;
+        document.body.style.backgroundColor = "white";
+    }, 5000);
+}
+
+function drawFreezeBuff() {
+    if (freezeBuff.active) {
+        ctx.drawImage(freezeBuff.image, freezeBuff.x, freezeBuff.y, freezeBuff.size, freezeBuff.size);
+    }
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawFreezeBuff();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+
 
         function resizeCanvas() {
     canvas.width = window.innerWidth;
