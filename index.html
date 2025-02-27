@@ -102,8 +102,7 @@ canvas {
     <audio id="catSound" src="cat.mp3"></audio>
     <audio id="gameOverSound" src="gameover.mp3"></audio>
     <audio id="backgroundMusic" src="music.mp3" loop></audio>
-
-    <script type="module">
+<script type="module">
         // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
         import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js";
@@ -135,7 +134,7 @@ canvas {
             leaderboard.innerHTML = ""; // Clear loading text
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                leaderboard.innerHTML += `<li>${data.name}: ${data.score}</li>`;
+                leaderboard.innerHTML += `<li>${data.playerName}: ${data.score}</li>`;
             });
         }
 
