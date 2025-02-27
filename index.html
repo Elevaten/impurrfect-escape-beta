@@ -40,9 +40,7 @@ html, body {
 
 /* 🎨 Game Canvas (Hidden Before Start) */
 canvas {
-    display: block !important;
-    background: black;
-
+    display: none;
 }
 
 /* 🎯 Score Display */
@@ -63,11 +61,6 @@ canvas {
         position: absolute;
         top: 0;
         left: 0;
-       
-    display: block !important;
-    background: black;
-
-
     }
 }
 
@@ -103,7 +96,7 @@ canvas {
     text-align: center;
     width: 250px;
     position: absolute;
-    top: 60%;
+    top: 70%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
@@ -240,8 +233,6 @@ let music = new Audio("music.mp3");
 music.loop = true;
 
 function startGame() {
-    console.log("startGame() function triggered!"); // Debugging
-
     gameRunning = true;
     ufo.alive = true;
     lasers = [];
@@ -250,39 +241,20 @@ function startGame() {
     timeElapsed = 0;
 
     music.play();
+    startButton.style.display = "none"; 
+    canvas.style.display = "block"; 
+     document.getElementById("leaderboard").style.display = "none";
 
-    // Hide start button and leaderboard
-    document.getElementById("startButton").style.display = "none";
-    document.getElementById("leaderboard").style.display = "none"; 
-
-    // Hide other start screen elements (if any)
-    document.getElementById("score").style.display = "block"; // Show score
-    document.getElementById("gameCanvas").style.display = "block"; // Show canvas
-
-    // Remove background image to avoid overlap
+    // 🖼 Remove the background image when the game starts
     document.body.style.background = "black";
 
-    gameLoop(); // Start the game loop
+    gameLoop();
 }
 
 
 
-
 // ✅ Attach click event to start the game
-document.getElementById("startButton").addEventListener("click", function() {
-    const canvas = document.getElementById("gameCanvas");
-    const startButton = document.getElementById("startButton");
-
-    // Hide start button
-    startButton.style.display = "none";
-
-    // Show canvas
-    canvas.style.display = "block";
-
-    // Start game logic here (ensure your game initialization is working)
-    startGame();
-});
-
+startButton.addEventListener("click", startGame);
 
 // ✅ Stop the game from running before the button is clicked
 function gameLoop() {
