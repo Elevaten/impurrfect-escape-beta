@@ -223,7 +223,6 @@ let gameRunning = false; // The game is paused at start
 
 let music = new Audio("music.mp3");
 music.loop = true;
-
 function startGame() {
     gameRunning = true;
     ufo.alive = true;
@@ -231,18 +230,20 @@ function startGame() {
     projectiles = [];
     score = 0;
     timeElapsed = 0;
-    freezeActive = false; // Prevent freeze from blocking restart
 
     music.play();
     startButton.style.display = "none"; 
     canvas.style.display = "block"; 
     document.getElementById("leaderboard").style.display = "none";
-
     document.body.style.background = "black";
 
-    gameLoop(); // Make sure the loop restarts
-}
+    // ✅ First freeze buff spawns at 3 seconds
+    setTimeout(() => {
+        spawnFreezeBuff();
+    }, 3000);
 
+    gameLoop();
+}
 
 
 // ✅ Attach click event to start the game
@@ -265,7 +266,7 @@ function gameLoop() {
         updateUFO();
         updateProjectiles();
         updateLasers();
-        updateFreezeBuff(16); // Ensuring freeze buff updates every frame
+        updateFreezeBuff(); // ✅ NOW IT RUNS EVERY FRAME!
 
         draw(); // Redraw everything
 
@@ -300,10 +301,12 @@ setTimeout(() => {
         
 let lastTime = performance.now();
 
+let lastUpdateTime = performance.now();
+
 function updateFreezeBuff() {
     let now = performance.now();
-    let deltaTime = now - lastTime;
-    lastTime = now;
+    let deltaTime = now - lastUpdateTime;
+    lastUpdateTime = now;
 
     if (freezeActive) {
         freezeTimer -= deltaTime;
@@ -319,13 +322,17 @@ function updateFreezeBuff() {
     }
 }
 
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear screen
 
-function drawFreezeBuff(ctx) {
-    if (freezeBuff.active) {
-        ctx.drawImage(freezeBuffImg, freezeBuff.x - freezeBuff.radius, freezeBuff.y - freezeBuff.radius, 40, 40);
-    }
+    // Draw all game elements
+    drawUFO();
+    drawProjectiles();
+    drawLasers();
+    drawFreezeBuff(ctx); // ✅ DRAW THE BUFF
+
     if (freezeActive) {
-        ctx.fillStyle = "rgba(0, 0, 255, 0.2)";
+        ctx.fillStyle = "rgba(0, 0, 255, 0.2)"; // ✅ Make screen slightly blue
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 }
@@ -337,13 +344,21 @@ canvas.addEventListener("click", (event) => {
     
     const dx = mouseX - freezeBuff.x;
     const dy = mouseY - freezeBuff.y;
+
+    console.log(`Clicked at ${mouseX}, ${mouseY}`); // ✅ Debug Clicks
+    console.log(`Buff at ${freezeBuff.x}, ${freezeBuff.y}`); // ✅ Debug Buff
+
     if (Math.sqrt(dx * dx + dy * dy) < freezeBuff.radius) {
+        console.log("Freeze buff clicked!"); // ✅ Confirm Click Works
+
         freezeBuff.active = false;
         freezeActive = true;
         freezeTimer = 5000; // Freeze for 5 seconds
+
         // Pause lasers and projectiles here
     }
 });
+
 
 
         function resizeCanvas() {
